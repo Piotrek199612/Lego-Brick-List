@@ -73,32 +73,35 @@ class StartActivity : AppCompatActivity() {
         if (archivalButton.text == getString(R.string.archival_button_off))
             archive = "Active <> 0"
 
-        var cursor = db.readableDatabase.query("Inventories" , arrayOf("Name, Active, LastAccessed"), archive, null, null, null, "LastAccessed ASC")
+        var cursor = db.readableDatabase.query("Inventories" , arrayOf("_id, Name, Active, LastAccessed"), archive, null, null, null, "LastAccessed ASC")
 
         if (cursor.moveToFirst()) {
             do {
                 var name = cursor.getString(cursor.getColumnIndex("Name"))
-                    var layout = LinearLayout(this)
-                    layout.orientation = LinearLayout.HORIZONTAL
-                    layout.layoutParams = LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT)
+                var layout = LinearLayout(this)
+                layout.orientation = LinearLayout.HORIZONTAL
+                layout.layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT)
 
-                    var nameLabel = TextView(this)
-                    nameLabel.text = name
-                    nameLabel.gravity = Gravity.CENTER
-                    nameLabel.layoutParams = LinearLayout.LayoutParams(0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
+                var nameLabel = TextView(this)
+                nameLabel.text = name
+                nameLabel.gravity = Gravity.CENTER
+                nameLabel.layoutParams = LinearLayout.LayoutParams(0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
 
 
-                    var but1 = Button(this)
-                    but1.text = "DETAILS"
-                    but1.layoutParams = LinearLayout.LayoutParams(0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f);
+                var id = cursor.getString(cursor.getColumnIndex("_id"))
+                var detailsButton = Button(this)
+                detailsButton.text = "DETAILS"
+                detailsButton.layoutParams = LinearLayout.LayoutParams(0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f)
+                detailsButton.setOnClickListener { detailsButtonOnClick(id) }
 
-                    layout.addView(nameLabel)
-                    layout.addView(but1)
-                    inventoryLayout.addView(layout)
+
+                layout.addView(nameLabel)
+                layout.addView(detailsButton)
+                inventoryLayout.addView(layout)
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -122,8 +125,17 @@ class StartActivity : AppCompatActivity() {
 
     fun addProject(view:View)
     {
-        Log.i("TEST","DZIALA")
         val intent = Intent(this, CreateProjectActivity::class.java)
         startActivity(intent)
     }
+    fun detailsButtonOnClick(id:String)
+    {
+        Log.i("ID", id)
+        var intent = Intent(this, InventoryPartsActivity::class.java)
+        var bundle = Bundle()
+        bundle.putString("inventoryKey",id)
+        intent.putExtras(bundle)
+        startActivity(intent)
+    }
+
 }
