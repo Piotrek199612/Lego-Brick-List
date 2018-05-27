@@ -116,7 +116,7 @@ class CreateProjectActivity : AppCompatActivity() {
                 values.put("ColorID", ColorID)
                 values.put("Extra", Extra)
                 db.writableDatabase.insert("InventoriesParts", null, values)
-                getImage(ItemID.toString(), ColorID.toString() )
+                getImage(ItemID.toString(), ColorID.toString())
             }
         }
         db.close()
@@ -124,7 +124,6 @@ class CreateProjectActivity : AppCompatActivity() {
     }
 
     private fun getImage(ItemID : String, ColorID: String) {
-        Log.i("ITEMID",ItemID)
         var db = DataBaseHelper(this)
         db.openDataBase()
         var cursor = db.readableDatabase.query("Codes",
@@ -136,18 +135,23 @@ class CreateProjectActivity : AppCompatActivity() {
         if (cursor.count > 0) {
 
             var Code = cursor.getString(cursor.getColumnIndex("Code"))
-            Log.i("ITEMID", "There is " + ItemID + " Searching: " + Code)
             StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().permitAll().build())
 
+            try {
+                val input = URL("https://www.lego.com/service/bricks/5/2/" + Code).content as InputStream
+                var image = input.readBytes()
+                var size = image.size
+                if (image.isNotEmpty())
+                {
+                    var args = ContentValues()
+                    args.put("Image", image)
+                    db.writableDatabase.update("Codes", args, "ItemID == ? and ColorID == ?", arrayOf(ItemID, ColorID))
+                }
+            }
+            catch (e: Exception)
+            {
 
-            val input = URL("https://www.lego.com/service/bricks/5/2/" + Code).content as InputStream
-            //val bitmap = BitmapFactory.decodeStream(input)
-            var image = input.readBytes()
-            Log.i("ITEMID", "AVAILABLE: " + image.size + " FROM " + "https://www.lego.com/service/bricks/5/2/" + Code)
-
-            var args = ContentValues()
-            args.put("Image", image)
-            db.writableDatabase.update("Codes", args, "ItemID == ? and ColorID == ?", arrayOf(ItemID, ColorID))
+            }
 
         }
     }

@@ -10,24 +10,24 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginTop="7dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@mipmap/ic_launcher_round" />
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="352dp"
-        android:layout_height="418dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="381dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="110dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:id="@+id/itemsLayout"
@@ -47,15 +47,14 @@
 
     <TextView
         android:id="@+id/quantityChangeLabel"
-        android:layout_width="50dp"
+        android:layout_width="0dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="10dp"
-        android:text="0"
+        android:layout_marginEnd="178dp"
+        android:layout_marginTop="8dp"
+        android:text="0/0"
         android:textAlignment="center"
         android:textSize="30sp"
-        app:layout_constraintEnd_toStartOf="@+id/button2"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/button"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -63,7 +62,8 @@
         android:id="@+id/button"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginEnd="13dp"
+        android:layout_marginStart="13dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/circle_button_minus"
         android:onClick="OnMinusClicked"
@@ -71,7 +71,6 @@
         android:textColor="#FFEE58"
         android:textSize="35sp"
         app:layout_constraintEnd_toStartOf="@+id/quantityChangeLabel"
-        app:layout_constraintHorizontal_bias="0.262"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -79,14 +78,14 @@
         android:id="@+id/button2"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginEnd="116dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/circle_button_plus"
         android:onClick="OnPlusClicked"
         android:text="+"
         android:textColor="#FFEE58"
         android:textSize="35sp"
-        app:layout_constraintEnd_toStartOf="@+id/imageView"
+        app:layout_constraintStart_toEndOf="@+id/quantityChangeLabel"
         app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

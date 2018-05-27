@@ -92,14 +92,30 @@ class StartActivity : AppCompatActivity() {
 
 
                 var id = cursor.getString(cursor.getColumnIndex("_id"))
+                var active = cursor.getString(cursor.getColumnIndex("Active"))
+
+                var archiveButton = Button(this)
+                if (active != "0") {
+                    archiveButton.text = "ARCHIVE"
+                    archiveButton.setBackgroundColor(Color.RED)
+                }
+                else {
+                    archiveButton.text = "ACTIVATE"
+                    archiveButton.setBackgroundColor(Color.GREEN)
+                }
+                archiveButton.layoutParams = LinearLayout.LayoutParams(0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT, 0.25f)
+                archiveButton.setOnClickListener { archiveButtonOnClick(id, active) }
+
                 var detailsButton = Button(this)
                 detailsButton.text = "DETAILS"
                 detailsButton.layoutParams = LinearLayout.LayoutParams(0,
-                        LinearLayout.LayoutParams.WRAP_CONTENT, 0.5f)
+                        LinearLayout.LayoutParams.WRAP_CONTENT, 0.25f)
                 detailsButton.setOnClickListener { detailsButtonOnClick(id) }
 
 
                 layout.addView(nameLabel)
+                layout.addView(archiveButton)
                 layout.addView(detailsButton)
                 inventoryLayout.addView(layout)
             } while (cursor.moveToNext())
@@ -107,6 +123,21 @@ class StartActivity : AppCompatActivity() {
         cursor.close()
         db.close()
     }
+
+    private fun archiveButtonOnClick(id: String, active:String)
+    {
+        db = DataBaseHelper(this)
+        db.openDataBase()
+        var args = ContentValues()
+        if (active != "0")
+            args.put("Active", 0)
+        else
+            args.put("Active", 1)
+        db.writableDatabase.update("Inventories", args, "_id == ?", arrayOf(id))
+        db.close()
+        getData()
+    }
+
     fun archivalSwitch(view: View)
     {
         if (archivalButton.text == getString(R.string.archival_button_off))
