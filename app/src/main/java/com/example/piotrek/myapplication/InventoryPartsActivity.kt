@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_inventory_parts.*
 import android.graphics.Bitmap
+import android.os.StrictMode
 import java.io.InputStream
 import java.net.URL
 
@@ -41,6 +42,7 @@ class InventoryPartsActivity : AppCompatActivity() {
         db.close()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
+        StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().permitAll().build())
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_inventory_parts)
 
