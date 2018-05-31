@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Lego Inventories</string>
     <string name="archival_button_on">Archival Visible</string>
     <string name="archival_button_off">Archival Hidden</string>
     <string name="add_project_button">Add Project</string>

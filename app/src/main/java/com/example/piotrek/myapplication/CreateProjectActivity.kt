@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.util.Log
 import android.app.Activity
 import android.content.Context
 import android.os.StrictMode
@@ -19,8 +18,11 @@ import android.os.AsyncTask
 
 class CreateProjectActivity : AppCompatActivity() {
 
+    private var urlAddress = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val bundle = intent.extras
+        urlAddress = bundle.getString("URL")
         setContentView(R.layout.activity_add_project)
     }
 
@@ -178,7 +180,7 @@ class CreateProjectActivity : AppCompatActivity() {
     {
         var name = nameEdit.text.toString()
         createInventory(name)
-        AsyncDownload(this).execute("http://fcds.cs.put.poznan.pl/MyWeb/BL/" + idEdit.text.toString() +".xml", name)
+        AsyncDownload(this).execute(urlAddress + idEdit.text.toString() +".xml", name)
     }
 
     private fun getImage(ItemID : String, ColorID: String, context: Context) {

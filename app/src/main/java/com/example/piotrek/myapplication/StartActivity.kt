@@ -3,7 +3,6 @@ package com.example.piotrek.myapplication
 import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -14,10 +13,14 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.view.Gravity
-import kotlinx.android.synthetic.main.activity_add_project.*
-import java.net.HttpURLConnection
-import java.net.URL
-import android.os.StrictMode
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast
+import android.R.string.cancel
+import android.content.DialogInterface
+import android.support.v7.app.AlertDialog
+import android.text.InputType
+import android.widget.EditText
 
 
 
@@ -29,6 +32,7 @@ class StartActivity : AppCompatActivity() {
 
     private var inventories: Cursor? = null
     private lateinit var db : DataBaseHelper
+    private var urlAdress = "http://fcds.cs.put.poznan.pl/MyWeb/BL/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,26 +41,40 @@ class StartActivity : AppCompatActivity() {
         archivalButton.setBackgroundColor(RED)
         archivalButton.text = getString(R.string.archival_button_off)
 
-        archiveButton.setBackgroundColor(Color.CYAN)
         addProjectButton.setBackgroundColor(Color.CYAN)
 
         db = DataBaseHelper(this)
         db.createDataBase()
-        db.openDataBase()
-
-        for (i :Int in 1..10)
-        {
-            val values = ContentValues()
-            values.put("Name", "Project Name$i")
-            values.put("Active", i%2)
-            values.put("LastAccessed", i%4)
-            db.writableDatabase.insert("Inventories", null, values)
-        }
-        db.close()
         getData()
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.settings_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        when (item.itemId) {
+            R.id.settingsButton -> {
+                Toast.makeText(this, "You clicked me.", Toast.LENGTH_SHORT).show()
+
+
+                val builder = AlertDialog.Builder(this)
+                builder.setTitle("URL Address")
+
+                val input = EditText(this)
+                input.inputType = InputType.TYPE_CLASS_TEXT
+                input.setText(urlAdress)
+                builder.setView(input)
+                builder.setPositiveButton("OK", DialogInterface.OnClickListener { dialog, which -> urlAdress = input.text.toString()})
+                builder.show()
+            }
+        }
+        return true
+    }
     override fun onRestart() {
         super.onRestart()
         getData()
@@ -111,7 +129,8 @@ class StartActivity : AppCompatActivity() {
                 detailsButton.text = "DETAILS"
                 detailsButton.layoutParams = LinearLayout.LayoutParams(0,
                         LinearLayout.LayoutParams.WRAP_CONTENT, 0.25f)
-                detailsButton.setOnClickListener { detailsButtonOnClick(id) }
+                detailsButton.setBackgroundColor(resources.getColor(R.color.colorDetails))
+                detailsButton.setOnClickListener { detailsButtonOnClick(id, name) }
 
 
                 layout.addView(nameLabel)
@@ -157,14 +176,18 @@ class StartActivity : AppCompatActivity() {
     fun addProject(view:View)
     {
         val intent = Intent(this, CreateProjectActivity::class.java)
+        var bundle = Bundle()
+        bundle.putString("URL",urlAdress)
+        intent.putExtras(bundle)
         startActivity(intent)
     }
-    private fun detailsButtonOnClick(id:String)
+    private fun detailsButtonOnClick(id:String, name:String)
     {
         Log.i("ID", id)
         var intent = Intent(this, InventoryPartsActivity::class.java)
         var bundle = Bundle()
         bundle.putString("inventoryKey",id)
+        bundle.putString("inventoryName",name)
         intent.putExtras(bundle)
         startActivity(intent)
     }

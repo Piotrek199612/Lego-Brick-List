@@ -19,17 +19,11 @@ import java.net.URL
 import android.content.Intent
 import android.app.Activity
 import android.net.Uri
-import android.os.Environment
 import java.io.*
-import android.provider.DocumentsContract
-import android.R.attr.mimeType
-import android.content.ContentResolver
 import org.w3c.dom.Document
 import org.w3c.dom.Element
-import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
-import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
@@ -153,8 +147,10 @@ class InventoryPartsActivity : AppCompatActivity() {
         waitLabel.isEnabled = false
 
         val bundle = intent.extras
+        var name = bundle.getString("inventoryName")
         var id = bundle.getString("inventoryKey")
-        setTitle(id)//TODO Change Title
+
+        setTitle(name)
 
         AsyncDownload(this).execute(id)
 

@@ -55,13 +55,6 @@
                     tools:layout_editor_absoluteX="8dp"
                     tools:layout_editor_absoluteY="431dp" />
 
-                <Button
-                    android:id="@+id/archiveButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:layout_weight="1"
-                    android:text="@string/archive_button" />
             </LinearLayout>
 
             <Button
