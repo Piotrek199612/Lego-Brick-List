@@ -1,22 +1,37 @@
 package com.example.piotrek.myapplication
 
 import android.content.ContentValues
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.Gravity
-import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_inventory_parts.*
 import android.graphics.Bitmap
-import android.os.StrictMode
-import java.io.InputStream
+import android.os.AsyncTask
+import android.view.*
 import java.net.URL
+import android.content.Intent
+import android.app.Activity
+import android.net.Uri
+import android.os.Environment
+import java.io.*
+import android.provider.DocumentsContract
+import android.R.attr.mimeType
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -28,6 +43,40 @@ class InventoryPartsActivity : AppCompatActivity() {
     private var Items = mutableListOf<MutableMap<String, String>>()
     private var Images = mutableMapOf<String, Bitmap>()
     private var Layouts = mutableListOf<Pair<String, LinearLayout>>()
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.inventory_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        when (item.itemId) {
+            R.id.exportButton -> {
+                Toast.makeText(this, "You clicked me.", Toast.LENGTH_SHORT).show()
+
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+
+                intent.addCategory(Intent.CATEGORY_OPENABLE)
+
+                intent.setType("text/xml")
+                intent.putExtra(Intent.EXTRA_TITLE, "test")
+                startActivityForResult(intent, 444)
+            }
+        }
+        return true
+    }
+
+
+    public override fun onActivityResult(requestCode: Int, resultCode: Int,
+                                         resultData: Intent?) {
+
+        if (requestCode == 444 && resultCode == Activity.RESULT_OK)
+        {
+            Log.i("PATH1","CREATED")
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
@@ -42,100 +91,18 @@ class InventoryPartsActivity : AppCompatActivity() {
         db.close()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
-        StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder().permitAll().build())
+
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_inventory_parts)
-
+        waitLabel.isEnabled = false
 
         val bundle = intent.extras
         var id = bundle.getString("inventoryKey")
-        setTitle(id)
+        setTitle(id)//TODO Change Title
 
-        var db = DataBaseHelper(this)
-        db.openDataBase()
+        AsyncDownload(this).execute(id)
 
-        var cursor = db.readableDatabase.query("InventoriesParts" , arrayOf("_id, ItemID, ColorID, QuantityInSet, QuantityInStore"), "InventoryID == ?", arrayOf(id), null, null, null)
-
-
-        if (cursor.moveToFirst()) {
-            var i = 0
-            do {
-
-                var tmp  = mutableMapOf<String,String> ()
-                tmp["QuantityInStore"] = cursor.getString(cursor.getColumnIndex("QuantityInStore"))
-                tmp["QuantityInSet"] = cursor.getString(cursor.getColumnIndex("QuantityInSet"))
-                tmp["_id"] = cursor.getString(cursor.getColumnIndex("_id"))
-
-                var ColorID = cursor.getString(cursor.getColumnIndex("ColorID"))
-                var cursorColor = db.readableDatabase.query("Colors" , arrayOf("Name, Code"), "_id == ?", arrayOf(ColorID), null, null, null)
-                cursorColor.moveToFirst()
-                tmp["Color"] = cursorColor.getString(cursorColor.getColumnIndex("Name"))
-                tmp["ColorCode"] = cursorColor.getString(cursorColor.getColumnIndex("Code"))
-                cursorColor.close()
-                var ItemID = cursor.getString(cursor.getColumnIndex("ItemID"))
-                tmp["ItemID"] = ItemID
-                var cursorItemID = db.readableDatabase.query("Parts" , arrayOf("Code, Name"), "_id == ?", arrayOf(ItemID), null, null, null)
-                cursorItemID.moveToFirst()
-                tmp["ItemName"] = cursorItemID.getString(cursorItemID.getColumnIndex("Name"))
-                tmp["Code"] = cursorItemID.getString(cursorItemID.getColumnIndex("Code"))
-
-                cursorItemID.close()
-
-                tmp["ItemKey"] = i.toString()
-
-                var cursorImage = db.readableDatabase.query("Codes" , arrayOf("Image"), "ItemID == ? and ColorID = ?", arrayOf(ItemID, ColorID), null, null, null)
-                Log.i("PART","ITEMID $ItemID, COLORID $ColorID")
-                if (cursorImage.count > 0) {
-                    cursorImage.moveToFirst()
-                    if (cursorImage.getBlob(cursorImage.getColumnIndex("Image")) != null)
-                    {
-                        var image = cursorImage.getBlob(cursorImage.getColumnIndex("Image"))
-                        val bmp = BitmapFactory.decodeByteArray(image, 0, image.size)
-                        var scaledBmp = Bitmap.createScaledBitmap(bmp, 250, 250, false)
-                        Images[i.toString()] = scaledBmp
-                    }
-
-                }
-                else
-                {
-                    var inputTmp : Any
-                    inputTmp = try {
-                        URL("http://img.bricklink.com/P/" +tmp["ColorCode"]+"/" + tmp["Code"]+".gif").content
-                    } catch (e:Exception) {
-                        URL("https://www.bricklink.com/PL/"+tmp["Code"]+".jpg").content
-                    }
-
-                    var input  = inputTmp as InputStream
-
-                    if (input != null)
-                    {
-                        var image = input.readBytes()
-                        if (image != null)
-                        {
-                            if (image.isNotEmpty()) {
-                                val bmp = BitmapFactory.decodeByteArray(image, 0, image.size)
-                                if (bmp != null)
-                                {
-                                    var scaledBmp = Bitmap.createScaledBitmap(bmp, 250, 250, false)
-                                    if (scaledBmp!=null)
-                                        Images[i.toString()] = scaledBmp
-                                }
-                            }
-                        }
-                    }
-                }
-                i += 1
-
-                Items.add(tmp)
-
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        db.close()
-        fun selector(p: MutableMap<String, String>): Double? = (p["QuantityInStore"]!!.toDouble() / p["QuantityInSet"]!!.toDouble())
-        Items.sortBy { selector(it) }
-        CreateItems()
-        DrawItems()
     }
 
     private fun CreateItems()
@@ -218,6 +185,129 @@ class InventoryPartsActivity : AppCompatActivity() {
             }
         }
     }
+
+    inner class AsyncDownload: AsyncTask<String, String, Boolean> {
+
+        private var mContext: Context
+
+        constructor(context: Context) : super()
+        {
+            mContext = context
+        }
+
+        override fun onPreExecute() {
+            super.onPreExecute()
+            waitLabel.isEnabled = true
+            waitLabel.text = "Loading Project"
+        }
+
+        override fun doInBackground(vararg p0: String?): Boolean {
+            var id = p0[0]
+
+            var db = DataBaseHelper(mContext)
+            db.openDataBase()
+
+            var cursor = db.readableDatabase.query("InventoriesParts" , arrayOf("_id, ItemID, ColorID, QuantityInSet, QuantityInStore"), "InventoryID == ?", arrayOf(id), null, null, null)
+
+
+            if (cursor.moveToFirst()) {
+                var i = 0
+                do {
+
+                    var tmp  = mutableMapOf<String,String> ()
+                    tmp["QuantityInStore"] = cursor.getString(cursor.getColumnIndex("QuantityInStore"))
+                    tmp["QuantityInSet"] = cursor.getString(cursor.getColumnIndex("QuantityInSet"))
+                    tmp["_id"] = cursor.getString(cursor.getColumnIndex("_id"))
+
+                    var ColorID = cursor.getString(cursor.getColumnIndex("ColorID"))
+                    var cursorColor = db.readableDatabase.query("Colors" , arrayOf("Name, Code"), "_id == ?", arrayOf(ColorID), null, null, null)
+                    cursorColor.moveToFirst()
+                    tmp["Color"] = cursorColor.getString(cursorColor.getColumnIndex("Name"))
+                    tmp["ColorCode"] = cursorColor.getString(cursorColor.getColumnIndex("Code"))
+                    cursorColor.close()
+                    var ItemID = cursor.getString(cursor.getColumnIndex("ItemID"))
+                    tmp["ItemID"] = ItemID
+                    var cursorItemID = db.readableDatabase.query("Parts" , arrayOf("Code, Name"), "_id == ?", arrayOf(ItemID), null, null, null)
+                    cursorItemID.moveToFirst()
+                    tmp["ItemName"] = cursorItemID.getString(cursorItemID.getColumnIndex("Name"))
+                    tmp["Code"] = cursorItemID.getString(cursorItemID.getColumnIndex("Code"))
+
+                    cursorItemID.close()
+
+                    tmp["ItemKey"] = i.toString()
+
+                    var cursorImage = db.readableDatabase.query("Codes" , arrayOf("Image"), "ItemID == ? and ColorID = ?", arrayOf(ItemID, ColorID), null, null, null)
+                    Log.i("PART","ITEMID $ItemID, COLORID $ColorID")
+                    if (cursorImage.count > 0) {
+                        cursorImage.moveToFirst()
+                        if (cursorImage.getBlob(cursorImage.getColumnIndex("Image")) != null)
+                        {
+                            var image = cursorImage.getBlob(cursorImage.getColumnIndex("Image"))
+                            val bmp = BitmapFactory.decodeByteArray(image, 0, image.size)
+                            var scaledBmp = Bitmap.createScaledBitmap(bmp, 250, 250, false)
+                            Images[i.toString()] = scaledBmp
+                        }
+
+                    }
+                    else
+                    {
+                        var inputTmp : Any
+                        inputTmp = try {
+                            URL("http://img.bricklink.com/P/" +tmp["ColorCode"]+"/" + tmp["Code"]+".gif").content
+                        } catch (e:Exception) {
+                            URL("https://www.bricklink.com/PL/"+tmp["Code"]+".jpg").content
+                        }
+
+                        var input  = inputTmp as InputStream
+
+                        if (input != null)
+                        {
+                            var image = input.readBytes()
+                            if (image != null)
+                            {
+                                if (image.isNotEmpty()) {
+                                    val bmp = BitmapFactory.decodeByteArray(image, 0, image.size)
+                                    if (bmp != null)
+                                    {
+                                        var scaledBmp = Bitmap.createScaledBitmap(bmp, 250, 250, false)
+                                        if (scaledBmp!=null)
+                                            Images[i.toString()] = scaledBmp
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    i += 1
+
+                    Items.add(tmp)
+
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
+            db.close()
+            fun selector(p: MutableMap<String, String>): Double? = (p["QuantityInStore"]!!.toDouble() / p["QuantityInSet"]!!.toDouble())
+            Items.sortBy { selector(it) }
+            return true
+        }
+
+        override fun onPostExecute(result: Boolean?) {
+            super.onPostExecute(result)
+            waitLabel.isEnabled = true
+            waitLabel.text = ""
+            if (result == true)
+            {
+                var a = mContext as InventoryPartsActivity
+                a.CreateItems()
+                a.DrawItems()
+            }
+            else
+            {
+                var a = mContext as InventoryPartsActivity
+                a.finish()
+            }
+        }
+    }
+
 
     fun OnPlusClicked(v:View)
     {

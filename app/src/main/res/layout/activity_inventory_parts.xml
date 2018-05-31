@@ -24,7 +24,7 @@
         android:layout_height="381dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="110dp"
+        android:layout_marginTop="112dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -48,12 +48,14 @@
     <TextView
         android:id="@+id/quantityChangeLabel"
         android:layout_width="0dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="190dp"
         android:layout_marginEnd="178dp"
         android:layout_marginTop="8dp"
         android:text="0/0"
         android:textAlignment="center"
         android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@+id/waitLabel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/button"
         app:layout_constraintTop_toTopOf="parent" />
@@ -87,5 +89,16 @@
         android:textSize="35sp"
         app:layout_constraintStart_toEndOf="@+id/quantityChangeLabel"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/waitLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="214dp"
+        android:textSize="36sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/quantityChangeLabel" />
 
 </android.support.constraint.ConstraintLayout>

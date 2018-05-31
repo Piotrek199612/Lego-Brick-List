@@ -62,7 +62,7 @@ class StartActivity : AppCompatActivity() {
         getData()
     }
 
-    fun getData()
+    private fun getData()
     {
         db = DataBaseHelper(this)
         db.openDataBase()
@@ -159,7 +159,7 @@ class StartActivity : AppCompatActivity() {
         val intent = Intent(this, CreateProjectActivity::class.java)
         startActivity(intent)
     }
-    fun detailsButtonOnClick(id:String)
+    private fun detailsButtonOnClick(id:String)
     {
         Log.i("ID", id)
         var intent = Intent(this, InventoryPartsActivity::class.java)
