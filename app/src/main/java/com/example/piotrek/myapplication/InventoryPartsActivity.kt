@@ -23,15 +23,16 @@ import android.os.Environment
 import java.io.*
 import android.provider.DocumentsContract
 import android.R.attr.mimeType
-
-
-
-
-
-
-
-
-
+import android.content.ContentResolver
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.Transformer
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 
 
 /**
@@ -68,13 +69,67 @@ class InventoryPartsActivity : AppCompatActivity() {
         return true
     }
 
+    private fun writeXML(uri:Uri)
+    {
+        val docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        val doc = docBuilder.newDocument()
+
+        val rootElement = doc.createElement("INVENTORY")
+
+        Items.forEach{
+            if ( it["QuantityInStore"]!!.toInt() < it["QuantityInSet"]!!.toInt())
+            {
+                var neededQuantity =  it["QuantityInSet"]!!.toInt() - it["QuantityInStore"]!!.toInt()
+                rootElement.appendChild(createItemXML(doc,it["TypeCode"].orEmpty(), it["ItemID"].orEmpty(), it["ColorCode"].orEmpty(), neededQuantity.toString()))
+            }
+        }
+
+        doc.appendChild(rootElement)
+        val transformer= TransformerFactory.newInstance().newTransformer()
+
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+        val cr = contentResolver
+        val ins = cr.openOutputStream(uri)
+        transformer.transform(DOMSource(doc), StreamResult(ins))
+        ins.close()
+
+    }
+
+    private fun createItemXML(doc:Document,itemType:String, itemID:String, color:String, quantity:String):Element
+    {
+        val item = doc.createElement("ITEM")
+
+        item.appendChild(createElementXML(doc,"ITEMTYPE", itemType))
+        item.appendChild(createElementXML(doc,"ITEMID", itemID))
+        item.appendChild(createElementXML(doc,"COLOR", color))
+        item.appendChild(createElementXML(doc,"QTYFILLED", quantity))
+
+        return item
+    }
+
+    private fun createElementXML(doc:Document, fieldName:String, fieldValue:String): Element
+    {
+        val element = doc.createElement(fieldName)
+        element.appendChild(doc.createTextNode(fieldValue))
+        return element
+    }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int,
                                          resultData: Intent?) {
 
-        if (requestCode == 444 && resultCode == Activity.RESULT_OK)
-        {
-            Log.i("PATH1","CREATED")
+        if (requestCode == 444 && resultCode == Activity.RESULT_OK) {
+            Log.i("PATH1", "CREATED")
+
+            if (resultData != null) {
+                var uri = resultData.getData();
+                Log.i("PAHT1", "Uri: " + uri.toString());
+                /*val cr = contentResolver
+                val ins = cr.openOutputStream(uri)
+                ins.write("TEST TEST TEST".toByteArray())
+                ins.close()*/
+                writeXML(uri)
+
+            }
         }
     }
 
@@ -207,7 +262,7 @@ class InventoryPartsActivity : AppCompatActivity() {
             var db = DataBaseHelper(mContext)
             db.openDataBase()
 
-            var cursor = db.readableDatabase.query("InventoriesParts" , arrayOf("_id, ItemID, ColorID, QuantityInSet, QuantityInStore"), "InventoryID == ?", arrayOf(id), null, null, null)
+            var cursor = db.readableDatabase.query("InventoriesParts" , arrayOf("_id, ItemID, TypeID, ColorID, QuantityInSet, QuantityInStore"), "InventoryID == ?", arrayOf(id), null, null, null)
 
 
             if (cursor.moveToFirst()) {
@@ -218,6 +273,12 @@ class InventoryPartsActivity : AppCompatActivity() {
                     tmp["QuantityInStore"] = cursor.getString(cursor.getColumnIndex("QuantityInStore"))
                     tmp["QuantityInSet"] = cursor.getString(cursor.getColumnIndex("QuantityInSet"))
                     tmp["_id"] = cursor.getString(cursor.getColumnIndex("_id"))
+
+                    var TypeID = cursor.getString(cursor.getColumnIndex("TypeID"))
+                    var cursorType = db.readableDatabase.query("ItemTypes" , arrayOf("Code"), "_id == ?", arrayOf(TypeID), null, null, null)
+                    cursorType.moveToFirst()
+                    tmp["TypeCode"] = cursorType.getString(cursorType.getColumnIndex("Code"))
+                    cursorType.close()
 
                     var ColorID = cursor.getString(cursor.getColumnIndex("ColorID"))
                     var cursorColor = db.readableDatabase.query("Colors" , arrayOf("Name, Code"), "_id == ?", arrayOf(ColorID), null, null, null)
